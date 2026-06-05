@@ -60,8 +60,8 @@ FUNCTIONAL_MAP: dict[str, str] = {
 
 
 #  Page config
-favicon_path = Path(__file__).parent / "house-plus.svg"
-with open(favicon_path) as f:
+ICON_DIR = Path(__file__).parent.parent / "icons" / "house-plus.svg"
+with open(ICON_DIR) as f:
     svg_content = f.read()
 
 svg_content = svg_content.replace('currentColor', '#c8a96e')
