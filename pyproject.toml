@@ -1,19 +1,26 @@
 [project]
 name = "house-prices-ml"
 version = "0.1.0"
-description = "Add your description here"
+description = "End-to-end ML pipeline predicting residential property sale prices. Kaggle score: $12,337 RMSE."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "kagglehub>=1.0.1",
-    "numpy>=2.4.6",
-    "pandas>=3.0.3",
+    "numpy>=2.4.0",
+    "pandas>=3.0.0",
     "plotly>=6.8.0",
-    "pytest>=9.0.3",
-    "pytest-cov>=7.1.0",
     "scikit-learn>=1.9.0",
-    "scipy>=1.17.1",
+    "scipy>=1.17.0",
     "xgboost>=3.2.0",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.0.0",
+    "pytest-cov>=7.1.0",
+]
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "--cov=src --cov-report=term-missing"
