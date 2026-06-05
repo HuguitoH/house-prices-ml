@@ -5,6 +5,8 @@
 ![XGBoost](https://img.shields.io/badge/XGBoost-3.2-red)
 ![Plotly](https://img.shields.io/badge/Plotly-6.8-purple?logo=plotly&logoColor=white)
 ![Kaggle](https://img.shields.io/badge/Kaggle-12%2C337%20RMSE-20BEFF?logo=kaggle&logoColor=white)
+![CI](https://github.com/HuguitoH/house-prices-ml/actions/workflows/ci.yml/badge.svg)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://house-prices-ml-kaggle.streamlit.app/)
 
 End-to-end ML project predicting residential property sale prices (Ames, Iowa).
 Built across two notebooks with a shared utility module, covering the full pipeline
