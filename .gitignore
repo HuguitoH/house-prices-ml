@@ -1,0 +1,19 @@
+# Data
+data/
+
+# Generated outputs
+submissions/
+figures/
+
+# Models - large binary files (maybe github decline)
+# models/
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Environment
+.env
+*.egg-info/
+dist/
