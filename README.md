@@ -10,9 +10,25 @@
 
 End-to-end ML project predicting residential property sale prices (Ames, Iowa).
 Built across two notebooks with a shared utility module, covering the full pipeline
-from raw data exploration to a serialised production-ready model.
+from raw data exploration to a serialised production-ready model with a deployed Streamlit app.
 
 **Kaggle Score: $12,337 RMSE** — Home Data for ML Course competition
+
+---
+
+## App
+
+Live at **[house-prices-ml-kaggle.streamlit.app](https://house-prices-ml-kaggle.streamlit.app/)**
+
+Four pages:
+
+**Predict** — estimate sale price from property inputs. Neighbourhood dropdown with median price context, quality sliders, area inputs with sqft/m² toggle, garage and bathroom selectors.
+
+**Map** — Voronoi tessellation of all 25 Ames neighbourhoods coloured by median sale price tier. Click a zone to select it. Toggle tiers to filter.
+
+**Compare** — configure two properties side by side and compare estimated prices with a feature breakdown chart.
+
+**Sensitivity** — fix a base property and explore how one variable (quality, area, year built, neighbourhood, etc.) drives the estimated price. Reactive — no button needed.
 
 ---
 
@@ -41,49 +57,43 @@ and XGBoost (non-linear) reduce generalisation error.
 
 ```
 house-prices-ml/
+├── app.py                          # Streamlit app — Predict + Model Info
+├── pages/
+│   ├── 01_Map.py                   # Voronoi neighbourhood map
+│   ├── 02_Compare.py               # Side-by-side property comparison
+│   └── 03_Sensitivity.py           # Sensitivity analysis
 ├── notebooks/
 │   ├── 01_eda_and_pipeline.ipynb
 │   └── 02_feature_engineering_and_modelling.ipynb
 ├── src/
-│   ├── registry.py
-│   ├── features.py
-│   ├── pipeline.py
-│   └── evaluate.py
+│   ├── registry.py                 # TransformationRegistry
+│   ├── features.py                 # engineer_base_features, engineer_extended_features
+│   ├── pipeline.py                 # impute_semantic, build_column_transformer
+│   └── evaluate.py                 # compute_metrics, evaluate_model
 ├── tests/
 │   ├── test_features.py
 │   ├── test_registry.py
 │   ├── test_pipeline.py
 │   └── test_evaluate.py
-├── pipeline_utils.py
+├── icons/                          # SVG favicons
 ├── models/
-│   ├── pipeline_state.pkl
-│   ├── model_ridge.pkl
-│   └── model_blend.pkl
+│   ├── pipeline_state.pkl          # Exported state from notebook 01
+│   ├── model_ridge.pkl             # Ridge (alpha=10) — 20 KB
+│   └── model_blend.pkl             # Blend Ridge + XGBoost — 823 KB
+├── pipeline_utils.py               # Backwards compatibility shim → src/
 ├── pyproject.toml
 └── README.md
 ```
 
 ### Why this structure?
 
-**`pipeline_utils.py`** contains all shared logic — imputation, feature engineering,
-model evaluation, pipeline builder. Both notebooks import from it, eliminating
-code duplication and making every function independently testable.
+**`src/`** contains the production modules — `registry.py`, `features.py`, `pipeline.py`, `evaluate.py`. Each module has a single responsibility and is independently testable. `pipeline_utils.py` re-exports everything from `src/` for backwards compatibility with the notebooks.
 
-**`pipeline_state.pkl`** exports the full preprocessing state from notebook 01 so
-notebook 02 does not reload raw data or redefine functions. This mirrors how a
-production system would consume a trained preprocessor.
+**`tests/`** — 42 unit tests with 100% coverage on `src/`. Pure unit tests with synthetic fixtures, no dependency on real CSV data.
 
-**Two notebooks, one direction** — notebook 01 explores and establishes the baseline.
-Notebook 02 imports that baseline and extends it. Running them out of order or in
-isolation would fail — intentionally, because that reflects real pipeline dependencies.
+**`pipeline_state.pkl`** exports the full preprocessing state from notebook 01 so notebook 02 does not reload raw data or redefine functions. This mirrors how a production system would consume a trained preprocessor.
 
-**`src/`** contains the production modules — `registry.py`, `features.py`,
-`pipeline.py`, `evaluate.py`. Each module has a single responsibility and is
-independently testable. `pipeline_utils.py` re-exports everything from `src/`
-for backwards compatibility with the notebooks.
-
-**`tests/`** — 42 unit tests with 100% coverage on `src/`. Pure unit tests
-with synthetic fixtures, no dependency on real CSV data.
+**Two notebooks, one direction** — notebook 01 explores and establishes the baseline. Notebook 02 imports that baseline and extends it. Running them out of order or in isolation would fail — intentionally, because that reflects real pipeline dependencies.
 
 ---
 
@@ -139,7 +149,7 @@ Each feature justified by domain reasoning, not correlation fishing:
 | `FuncQual`         | `OverallQual x func_score`                  | Functional issues combined with quality                                  |
 | `TotalQualSF`      | `(OverallQual + OverallCond) / 2 x TotalSF` | Improved QualSF with condition                                           |
 
-Pipeline: 82 input features - 237 after OHE.
+Pipeline: 82 input features → 237 after OHE.
 
 ### Ablation Study
 
@@ -150,7 +160,7 @@ Feature engineering accounts for the majority of the 716-point total improvement
 ### Model Selection
 
 GridSearch with 5-fold CV across Ridge, XGBoost, Random Forest, SVR.
-Selection criteria: CV RMSE + overfitting gap - not raw test score.
+Selection criteria: CV RMSE + overfitting gap — not raw test score.
 
 ### Learning & Validation Curves
 
@@ -174,13 +184,16 @@ Total improvement: 716 points (5.5%)
 
 ## Stack
 
-- Python 3.11
-- scikit-learn - Pipeline, ColumnTransformer, GridSearchCV
+- Python 3.12
+- scikit-learn — Pipeline, ColumnTransformer, GridSearchCV
 - XGBoost, Ridge, Random Forest, SVR
-- Plotly - interactive visualisations
+- Plotly — interactive visualisations
 - pandas, numpy, scipy
-- kagglehub - automatic dataset download
-- pytest + pytest-cov - 42 unit tests, 100% coverage
+- folium + streamlit-folium — interactive Voronoi map
+- shapely — point-in-polygon click detection
+- kagglehub — automatic dataset download
+- pytest + pytest-cov — 42 unit tests, 100% coverage
+- Streamlit — production app with 4 pages
 
 ---
 
@@ -194,6 +207,9 @@ uv pip install -e ".[dev]"
 
 # Run tests
 pytest
+
+# Run the app
+streamlit run app.py
 
 # Run notebooks in order
 # notebooks/01_eda_and_pipeline.ipynb
@@ -218,3 +234,7 @@ and place `train.csv` and `test.csv` in `data/`.
 > This model was trained on Ames, Iowa housing data from 2006-2010. It is not
 > generalisable to other markets, geographies, or time periods. Do not use for
 > real estate valuation outside this context.
+
+- Systematic -22% error on houses below $100k — only 114 examples in that range (7.8% of dataset)
+- Learning curve flattened — dataset ceiling reached at 1,458 samples
+- Neighbourhood zones on the map are Voronoi tessellations from centroids, not official city boundaries
