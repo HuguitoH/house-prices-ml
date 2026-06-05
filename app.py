@@ -60,7 +60,7 @@ FUNCTIONAL_MAP: dict[str, str] = {
 
 
 #  Page config
-ICON_DIR = Path(__file__).parent.parent / "icons" / "house-plus.svg"
+ICON_DIR = Path(__file__).parent / "icons" / "house-plus.svg"
 with open(ICON_DIR) as f:
     svg_content = f.read()
 
