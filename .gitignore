@@ -12,8 +12,11 @@ figures/
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
+.coverage
 
 # Environment
 .env
 *.egg-info/
 dist/
+.venv/
+.python-version
