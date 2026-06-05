@@ -1,9 +1,9 @@
 # House Prices — Advanced Regression
 
-![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python&logoColor=white)
-![scikit-learn](https://img.shields.io/badge/scikit--learn-1.4-orange?logo=scikit-learn&logoColor=white)
-![XGBoost](https://img.shields.io/badge/XGBoost-2.0-red)
-![Plotly](https://img.shields.io/badge/Plotly-5.18-purple?logo=plotly&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-1.9-orange?logo=scikit-learn&logoColor=white)
+![XGBoost](https://img.shields.io/badge/XGBoost-3.2-red)
+![Plotly](https://img.shields.io/badge/Plotly-6.8-purple?logo=plotly&logoColor=white)
 ![Kaggle](https://img.shields.io/badge/Kaggle-12%2C337%20RMSE-20BEFF?logo=kaggle&logoColor=white)
 
 End-to-end ML project predicting residential property sale prices (Ames, Iowa).
@@ -39,20 +39,26 @@ and XGBoost (non-linear) reduce generalisation error.
 
 ```
 house-prices-ml/
-├── 01_eda_and_pipeline.ipynb           # EDA, preprocessing, 3-model benchmark
-├── 02_feature_engineering_and_modelling.ipynb  # Feature engineering, GridSearch, final model
-├── pipeline_utils.py                   # Shared functions — imputation, features, evaluation
-├── requirements.txt
-├── data/
-│   ├── train.csv
-│   └── test.csv
+├── notebooks/
+│   ├── 01_eda_and_pipeline.ipynb
+│   └── 02_feature_engineering_and_modelling.ipynb
+├── src/
+│   ├── registry.py
+│   ├── features.py
+│   ├── pipeline.py
+│   └── evaluate.py
+├── tests/
+│   ├── test_features.py
+│   ├── test_registry.py
+│   ├── test_pipeline.py
+│   └── test_evaluate.py
+├── pipeline_utils.py
 ├── models/
-│   ├── pipeline_state.pkl              # Exported state from notebook 01
-│   ├── model_ridge.pkl                 # Ridge (alpha=10) — 20 KB
-│   └── model_blend.pkl                 # Blend Ridge + XGBoost — 823 KB
-└── submissions/
-    ├── submission_ridge.csv            # Kaggle score: 12,883
-    └── submission_blend.csv            # Kaggle score: 12,337
+│   ├── pipeline_state.pkl
+│   ├── model_ridge.pkl
+│   └── model_blend.pkl
+├── pyproject.toml
+└── README.md
 ```
 
 ### Why this structure?
@@ -68,6 +74,14 @@ production system would consume a trained preprocessor.
 **Two notebooks, one direction** — notebook 01 explores and establishes the baseline.
 Notebook 02 imports that baseline and extends it. Running them out of order or in
 isolation would fail — intentionally, because that reflects real pipeline dependencies.
+
+**`src/`** contains the production modules — `registry.py`, `features.py`,
+`pipeline.py`, `evaluate.py`. Each module has a single responsibility and is
+independently testable. `pipeline_utils.py` re-exports everything from `src/`
+for backwards compatibility with the notebooks.
+
+**`tests/`** — 42 unit tests with 100% coverage on `src/`. Pure unit tests
+with synthetic fixtures, no dependency on real CSV data.
 
 ---
 
@@ -164,6 +178,7 @@ Total improvement: 716 points (5.5%)
 - Plotly - interactive visualisations
 - pandas, numpy, scipy
 - kagglehub - automatic dataset download
+- pytest + pytest-cov - 42 unit tests, 100% coverage
 
 ---
 
@@ -172,10 +187,15 @@ Total improvement: 716 points (5.5%)
 ```bash
 git clone https://github.com/HuguitoH/house-prices-ml
 cd house-prices-ml
-pip install -r requirements.txt
+uv venv && source .venv/bin/activate
+uv pip install -e ".[dev]"
 
-# Run notebook 01 first - generates pipeline_state.pkl
-# Then run notebook 02
+# Run tests
+pytest
+
+# Run notebooks in order
+# notebooks/01_eda_and_pipeline.ipynb
+# notebooks/02_feature_engineering_and_modelling.ipynb
 ```
 
 > [!TIP]
