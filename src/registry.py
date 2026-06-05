@@ -89,6 +89,15 @@ class TransformationRegistry:
         ].copy()
         return clone
 
+    def __getstate__(self) -> dict:
+        """Support pickle serialisation."""
+        return {"_targets": self._targets, "_df": self._df}
+
+    def __setstate__(self, state: dict) -> None:
+        """Support pickle deserialisation with backwards compatibility."""
+        self._targets = state.get("_targets", [])
+        self._df      = state["_df"]
+
     @property
     def data(self) -> pd.DataFrame:
         """Read-only access to the underlying DataFrame."""
