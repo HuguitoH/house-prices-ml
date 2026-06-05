@@ -18,11 +18,19 @@ from shapely.geometry import Polygon as ShapelyPolygon
 from streamlit_folium import st_folium
 
 
-# ── Page config ───────────────────────────────────────────────────────────────
+# Page config
+ICON_DIR = Path(__file__).parent.parent / "icons" / "map.svg"
+with open(ICON_DIR) as f:
+    svg_content = f.read()
+
+svg_content = svg_content.replace('currentColor', '#c8a96e')
+svg_content = svg_content.replace('#000000', '#c8a96e')
+svg_content = svg_content.replace('black', '#c8a96e')
+
 
 st.set_page_config(
     page_title="Neighbourhood Map",
-    page_icon="🗺️",
+    page_icon=svg_content,
     layout="wide",
 )
 
@@ -58,7 +66,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# ── Constants ─────────────────────────────────────────────────────────────────
+#  Constants
 
 NEIGHBOURHOOD_COORDS: dict[str, tuple[float, float]] = {
     "Blmngtn": (42.0614, -93.6200),
@@ -124,7 +132,7 @@ TIERS = [
 ]
 
 
-# ── Load bundle ───────────────────────────────────────────────────────────────
+# Load bundle
 
 @st.cache_resource
 def load_bundle():
@@ -136,7 +144,7 @@ def load_bundle():
 bundle = load_bundle()
 
 
-# ── Build neighbourhood dataframe ─────────────────────────────────────────────
+# Build neighbourhood dataframe
 
 @st.cache_data
 def build_df(_bundle) -> pd.DataFrame:
@@ -174,7 +182,7 @@ def get_tier_label(median: float) -> str:
     else:          return "Below average"
 
 
-# ── Voronoi + Sutherland-Hodgman clipping ─────────────────────────────────────
+# Voronoi + Sutherland-Hodgman clipping
 
 def clip_polygon_to_bbox(polygon, min_lat, max_lat, min_lng, max_lng):
     def inside(p, edge):
@@ -244,7 +252,7 @@ def compute_voronoi(df: pd.DataFrame):
 polygons = compute_voronoi(df)
 
 
-# ── Point-in-polygon click detection ─────────────────────────────────────────
+# Point-in-polygon click detection
 
 def find_clicked_neighbourhood(lat: float, lng: float) -> str | None:
     """Return the neighbourhood code whose Voronoi polygon contains the point."""
@@ -257,7 +265,7 @@ def find_clicked_neighbourhood(lat: float, lng: float) -> str | None:
     return None
 
 
-# ── Session state ─────────────────────────────────────────────────────────────
+#  Session state
 
 if "selected_code" not in st.session_state:
     st.session_state["selected_code"] = None
@@ -267,7 +275,7 @@ for label, _, _ in TIERS:
         st.session_state[f"tier_{label}"] = True
 
 
-# ── Header ────────────────────────────────────────────────────────────────────
+# Header
 
 st.markdown("# Neighbourhood Map")
 st.markdown(
@@ -280,7 +288,7 @@ st.markdown(
 st.markdown("<hr class='section-divider'>", unsafe_allow_html=True)
 
 
-# ── Layout ────────────────────────────────────────────────────────────────────
+# Layout
 
 col_map, col_info = st.columns([2, 1], gap="large")
 
@@ -381,7 +389,7 @@ with col_info:
     )
 
 
-# ── Map ───────────────────────────────────────────────────────────────────────
+# Map
 
 with col_map:
 
